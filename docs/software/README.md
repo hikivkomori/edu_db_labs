@@ -278,4 +278,137 @@ SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
 
 ```
 
-- RESTfull сервіс для управління даними
+# RESTfull сервіс для управління даними
+
+### Index.js
+
+```javascript
+import express from 'express'
+import cors from 'cors'
+import {
+  add,
+  deleteOne,
+  getAll,
+  getOne,
+  updateOne
+} from './controllers/userController.js'
+
+const PORT = 8000
+
+const app = express()
+app.use(cors())
+app.use(express.json())
+
+app.get('/', (req, res) => {
+  res.status(200).json('Success')
+})
+
+app.get('/users', getAll)
+app.get('/users/:id', getOne)
+app.post('/users', add)
+app.delete('/users/:id', deleteOne)
+app.put('/users/:id', updateOne)
+
+app.listen(PORT, (err) => {
+  if (err) {
+    console.log(err)
+  }
+})
+```
+
+### DB
+
+```javascript
+import mysql from 'mysql'
+
+export const Queries = {
+  getAll: 'SELECT * FROM users',
+  getOne: 'SELECT * FROM users WHERE id = ?',
+  add: 'INSERT INTO users (`id`, `password`, `username`, `email`) VALUES (?)',
+  deleteOne: 'DELETE FROM users WHERE id = ?',
+  update:
+    'UPDATE users SET `password`= ?, `username`= ?, `email`= ? WHERE id = ?'
+}
+
+const db = mysql.createConnection({
+  host: 'localhost',
+  user: 'root',
+  password: '',
+  database: 'mydb'
+})
+
+export default db
+```
+
+### User controller
+
+```javascript
+import db, { Queries } from './dbContoller.js'
+
+export const getAll = (req, res) => {
+  const q = Queries.getAll
+  db.query(q, (err, data) => {
+    if (err) {
+      console.log(err)
+      return res.status(500).json('Unexpected error.')
+    }
+
+    return res.status(200).json(data)
+  })
+}
+
+export const getOne = (req, res) => {
+  const id = req.params.id
+  const q = Queries.getOne
+
+  db.query(q, [id], (err, data) => {
+    if (err) {
+      console.log(err)
+      return res.status(500).json('Unexpected error.')
+    }
+
+    return res.status(200).json(data)
+  })
+}
+
+export const add = (req, res) => {
+  const q = Queries.add
+  const values = [null, req.body.password, req.body.username, req.body.email]
+
+  db.query(q, [values], (err, data) => {
+    if (err) {
+      console.log(err)
+      return res.status(500).json('Unexpected error.')
+    }
+    return res.status(200).json('User registred successfuly: \n', data)
+  })
+}
+
+export const deleteOne = (req, res) => {
+  const id = req.params.id
+  const q = Queries.deleteOne
+
+  db.query(q, [id], (err) => {
+    if (err) {
+      console.log(err)
+      return res.status(500).json('Unexpected error.')
+    }
+    return res.status(200).json('User deleted')
+  })
+}
+
+export const updateOne = (req, res) => {
+  const id = req.params.id
+  const q = Queries.update
+
+  const values = [null, req.body.password, req.body.username, req.body.email]
+
+  db.query(q, [...values, id], (err, data) => {
+    if (err) {
+      console.log(err)
+      return res.status(500).json('Unexpected error.')
+    }
+    return res.status(200).json('User updated successfuly: \n', data)
+  })
+}
+```
