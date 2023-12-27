@@ -282,7 +282,7 @@ SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
 
 ### Index.js
 
-```javascript
+```
 import express from 'express'
 import cors from 'cors'
 import {
@@ -318,7 +318,7 @@ app.listen(PORT, (err) => {
 
 ### DB
 
-```javascript
+```
 import mysql from 'mysql'
 
 export const Queries = {
@@ -342,7 +342,7 @@ export default db
 
 ### User controller
 
-```javascript
+```
 import db, { Queries } from './dbContoller.js'
 
 export const getAll = (req, res) => {
